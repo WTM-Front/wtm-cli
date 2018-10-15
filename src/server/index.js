@@ -38,7 +38,7 @@ module.exports = class {
     app
       .use(bodyParser())
       .use(proxy('/swaggerDoc', this.componentCreate.wtmfrontConfig.swaggerDoc))
-      .use(staticServer(path.join(this.contextRoot, "swagger", "dist")))
+      .use(staticServer(path.join(this.contextRoot,"wtmfront", "swagger", "dist")))
       // .use(proxy(this.componentCreate.wtmfrontConfig.swaggerDoc))
       .use(router.routes())
       .use(router.allowedMethods());

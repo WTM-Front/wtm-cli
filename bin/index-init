@@ -1,20 +1,19 @@
 #!/usr/bin/env node
 const program = require('commander');
-const project = require("./src/project.js");
+const project = require("../src/project");
 program
     .option('--name', '项目名称')
     .option('--template', '模板类型')
-    .option('--url', 'git 路径')
+    // .option('--url', 'git 路径')
     .parse(process.argv)
 const args = program.args
 const { name, template, url } = program
 const projectName = args[0] || name
 
 
-const project = new Project({
+const pro = new project({
     projectName,
     template,
-    description,
-    typescript
+    // url
 })
-project.create()
+pro.create()

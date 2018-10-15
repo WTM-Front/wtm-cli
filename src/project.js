@@ -24,7 +24,6 @@ class Project {
             // 执行npm install
             install: null,
         }, options)
-        // console.log(this);
     }
     /**
      * 初始化参数
@@ -117,7 +116,8 @@ class Project {
      * 创建项目
      */
     async create() {
-        const prompts = await this.init();
+        let prompts = await this.init();
+        prompts = Object.assign(this.options, prompts);
         const dest = await this.download(prompts);
         this.write(prompts, dest);
         this.copy(prompts, dest);
@@ -142,7 +142,7 @@ class Project {
                 "npm",
                 ['install --registry=https://registry.npm.taobao.org/'],
                 {
-                    cwd: this.rootPath,
+                    cwd: projectPath,
                     stdio: 'inherit',
                     shell: true,
                 }
