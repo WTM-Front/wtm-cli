@@ -130,7 +130,7 @@ module.exports = class {
                     // spinner.text = 'analysis template';
                     await analysis.render();
                     successList.push(component);
-                    log.success("创建成功 " + component.componentName);
+                    log.success("创建 " + component.componentName);
                     // 创建目录
                     this.mkdirSync(fsPath);
                     // 拷贝生成组件
@@ -147,7 +147,7 @@ module.exports = class {
             // 生成导出
             this.writeContainers();
             //  修改 页面配置 模型
-            log.success("create " + this.componentName);
+            log.success("创建 完成");
             // spinner.text = 'writeRouters';
         } catch (error) {
             log.error("error", error);
