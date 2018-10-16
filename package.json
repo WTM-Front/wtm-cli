@@ -3,7 +3,7 @@
   "version": "1.0.0-beta.6",
   "description": "",
   "scripts": {
-    "release": "npm publish . --registry http://registry.npmjs.org",
+    "release": "npm publish . --registry http://registry.npmjs.org", 
     "docs": "docsify serve docs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
