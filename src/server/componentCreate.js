@@ -110,12 +110,8 @@ module.exports = class {
     async create(components) {
         const spinner = ora('创建组件').start();
         try {
-            // this.componentName = component.containers.containersName;
-            // console.log(JSON.stringify(component.containers, null, 4));
-            // 清空目录
-            fs.readdirSync(this.temporaryPath).map(dir => {
-                fsExtra.removeSync(path.join(this.temporaryPath, dir));
-            });
+            // // 清空目录
+            fsExtra.removeSync(this.temporaryPath);
             this.deleteList = [];
             // 创建成功的组件
             const successList = [];
@@ -323,7 +319,7 @@ module.exports = class {
         conStr = conStr.replace(/(\/.*WTM.*\/)(\D*)(\/.*WTM.*\/)/, '/**WTM**/ \n    '
             + importList.join(",\n    ") +
             '\n    /**WTM**/')
-        fs.writeFileSync(conPath,conStr);
+        fs.writeFileSync(conPath, conStr);
         // log.success("writeContainers");
     }
     /**

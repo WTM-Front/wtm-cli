@@ -4,14 +4,14 @@
 安装 cli 工具，提供基础项目下载，模板服务 
 
 ```bash
-$ npm install -g wtmfront
+$ npm install -g wtm-cli
 ```
 !>[Node.js](https://nodejs.org/en/) (>=8.x, 8.x preferred), npm version 6+ and [Git](https://git-scm.com/).
 
 ## 初始化项目
-?> 参数顺序为   <项目名称>   <框架>（现只有react） <模板地址>
+?> 参数顺序为   <项目名称>   
 ```bash
-$ wtmfront init <project-name> <react|vue>  <git-url>
+$ wtm init <project-name> 
 ```
 ## 启动项目
 ?> webpack 配置相同 
@@ -23,7 +23,7 @@ $ npm start
 ## 启动模板服务
 
 ``` bash
-$ wtmfront server 或者 npm run server
+$ wtm server 或者 npm run wtm
 
 <!-- 出现如下信息说明模板服务已开启 -->
 √ 注入 registerHelper FormItem.js

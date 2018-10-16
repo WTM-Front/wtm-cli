@@ -1,17 +1,17 @@
-# wtmfront-cli ![npm version](https://img.shields.io/npm/v/wtmfront.svg?style=flat)
+# wtm-cli ![npm version](https://img.shields.io/npm/v/wtm-cli.svg?style=flat)
 
-[文档地址](https://lengyxin.github.io/wtmfront-cli)
+[文档地址](https://wtm-front.github.io/wtm-cli/)
 
 ### Installation
 
-Prerequisites: [Node.js](https://nodejs.org/en/) (>=8.x, 8.x preferred), npm version 5+ and [Git](https://git-scm.com/).
+Prerequisites: [Node.js](https://nodejs.org/en/) (>=8.x, 8.x preferred), npm version 6+ and [Git](https://git-scm.com/).
 
 ``` bash
-$ npm install -g wtmfront
+$ npm install -g wtm-cli
 ```
 ### 创建项目
 
 ``` bash
-                    项目名称   框架（现只有react） git 模板地址
-$ wtmfront init <project-name> <react|vue>  <git-url>
+        项目名称 
+$ wtm init <name>
 ```

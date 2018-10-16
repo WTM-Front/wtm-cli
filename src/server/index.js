@@ -5,7 +5,6 @@ const staticServer = require("koa-static");
 const path = require('path');
 const opn = require('opn');
 const proxy = require('koa2-simple-proxy');
-const cors = require('koa-cors');
 const componentCreate = require('./componentCreate');
 const routerGets = require('./routerGet');
 const routerPost = require('./routerPost');
