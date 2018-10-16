@@ -7,6 +7,7 @@ const semver = require('semver')
 const child_process = require('child_process')
 const download = require("./lib/download")
 const log = require("./lib/log")
+const server = require('./server/index');
 class Project {
     constructor(options) {
         const unSupportedVer = semver.lt(process.version, 'v7.6.0')
@@ -123,7 +124,11 @@ class Project {
         this.copy(prompts, dest);
         await this.downloadSwagger(prompts)
         this.exec(prompts)
-        log.success(`项目：【 ${prompts.projectName} 】 创建完成`)
+        const projectPath = path.join(this.rootPath, prompts.projectName);
+        log.success(`项目：【 ${prompts.projectName} 】 创建完成`);
+        log.success(`请到：【 ${projectPath} 】 运行 【 npm start 】`);
+        const config = require(path.join(projectPath, 'wtmfront.config.js'));
+        new server(projectPath).init(config.serverPort || 8765);
     }
     /**
      * 命令

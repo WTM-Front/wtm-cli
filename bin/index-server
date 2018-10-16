@@ -8,6 +8,7 @@ const rootPath = process.cwd();
 const path = require('path');
 const log = require('../src/lib/log');
 const server = require('../src/server/index');
+const update = require('../src/update');
 program.usage('<port>').parse(process.argv)
 
 // 根据输入，获取项目名称
@@ -16,12 +17,21 @@ const port = program.args[0]
 if (fsEditor.exists(path.join(rootPath, 'package.json'))) {
     const wtmconfig = path.join(rootPath, 'wtmfront.config.js');
     if (fsEditor.exists(wtmconfig)) {
-        const config = require(wtmconfig);
-        new server(rootPath).init(port || config.serverPort || 8765);
+        start(wtmconfig);
     } else {
         return log.error(`找不到 wtmfront.config.js 配置文件~`);
     }
 } else {
     return log.error(`找不到项目~`);
 }
-
+async function start(wtmconfig) {
+    const swagger = path.join(rootPath, 'wtmfront', 'swagger', 'dist', 'index.html');
+    const config = require(wtmconfig);
+    if (fsEditor.exists(swagger)) {
+        new server(rootPath).init(port || config.serverPort || 8765);
+    } else {
+        log.warning("没有找到 swagger 模块，等待更新")
+        await new update({ modular: "swagger" }).create();
+        new server(rootPath).init(port || config.serverPort || 8765);
+    }
+}

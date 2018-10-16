@@ -6,18 +6,20 @@ const store = memFs.create();
 const fsEditor = editor.create(store);
 const rootPath = process.cwd();
 const path = require('path');
-const log = require('../lib/log');
-const server = require('../server/index');
-program.usage('<port>').parse(process.argv)
-
-// 根据输入，获取项目名称
-const port = program.args[0]
+const log = require('../src/lib/log');
+const update = require('../src/update');
+program
+    .option('--modular', '模块')
+    .parse(process.argv)
+const args = program.args
+const { modular } = program
+const updateModular = args[0] || modular
 // 判断项目是否存在
 if (fsEditor.exists(path.join(rootPath, 'package.json'))) {
-    if (fsEditor.exists(path.join(rootPath, 'wtmfront.json'))) {
-        console.log("更新项目中的文件");
+    if (fsEditor.exists(path.join(rootPath, 'wtmfront.config.js'))) {
+        new update({ modular: updateModular }).create();
     } else {
-        return log.error(`找不到 wtmfront.json 配置文件~`);
+        return log.error(`找不到 wtmfront.config.js 配置文件~`);
     }
 } else {
     return log.error(`找不到项目~`);

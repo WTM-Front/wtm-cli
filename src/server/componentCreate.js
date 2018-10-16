@@ -6,6 +6,7 @@ const editor = require('mem-fs-editor');
 const store = memFs.create();
 const fsEditor = editor.create(store);
 const ora = require('ora');
+const rimraf = require('rimraf');
 const templateServer = require('./templateServer/analysis');
 const registerHelper = require('./templateServer/registerHelper');
 const log = require('../lib/log');
@@ -63,18 +64,23 @@ module.exports = class {
         /** 删除的列表 */
         this.deleteList = [];
         this.deleteTime = new Date().getTime();
-        /**
-         * 初始化配置
-         */
-        if (this.exists(this.wtmfrontPath)) {
-            this.setWtmfrontConfig();
-        }
         this.init();
     }
     /**
      * 初始化项目信息
      */
     init() {
+        if (this.exists(this.wtmfrontPath)) {
+            this.setWtmfrontConfig();
+            this.deleteList = [];
+        } else {
+            log.error("没有找到 配置文件")
+        }
+    }
+    /**
+     * 注入模块
+     */
+    injection() {
         registerHelper(this.wtmfrontConfig);
         this.getTemplate();
     }
@@ -102,7 +108,7 @@ module.exports = class {
      * @param {*} fsPath 
      */
     async create(components) {
-        // const spinner = ora('Create Components').start();
+        const spinner = ora('创建组件').start();
         try {
             // this.componentName = component.containers.containersName;
             // console.log(JSON.stringify(component.containers, null, 4));
@@ -122,7 +128,7 @@ module.exports = class {
                     // 模板服务
                     const analysis = new templateServer(temporaryPath);
                     this.mkdirSync(temporaryPath);
-                    // spinner.text = 'Create template';
+                    spinner.text = '创建 ' + component.componentName;
                     this.createTemporary(component.template, temporaryPath);
                     // 写入配置文件。
                     // spinner.text = 'Create pageConfig';
@@ -130,7 +136,7 @@ module.exports = class {
                     // spinner.text = 'analysis template';
                     await analysis.render();
                     successList.push(component);
-                    log.success("创建 " + component.componentName);
+                    // log.success("创建 " + component.componentName);
                     // 创建目录
                     this.mkdirSync(fsPath);
                     // 拷贝生成组件
@@ -142,12 +148,13 @@ module.exports = class {
                     log.error("error-", error);
                 }
             }
+            spinner.stop();
             // 写入路由
             this.writeRouters(successList, 'add');
             // 生成导出
             this.writeContainers();
             //  修改 页面配置 模型
-            log.success("创建 完成");
+            log.success("创建 ", successList.map(x => x.componentName).join(' / '));
             // spinner.text = 'writeRouters';
         } catch (error) {
             log.error("error", error);
@@ -197,11 +204,23 @@ module.exports = class {
             this.deleteTime = new Date().getTime();
             this.deleteList.push(componentName);
             this.writeContainers(componentName);
-            // setTimeout(() => {
-            fsExtra.removeSync(path.join(this.containersPath, componentName));
             this.writeRouters(componentName, 'delete');
+            const conPath = path.join(this.containersPath, componentName)
             log.success("delete " + componentName);
-            // });
+            // setTimeout(() => {
+            return fsExtra.remove(conPath)
+            // return new Promise((resole, reject) => {
+            //     fsExtra.remove(conPath, error => {
+            //         if (error) {
+            //             // return reject(error)
+            //         }
+            //         setTimeout(() => {
+            //             resole(true);
+            //         }, 500);
+            //     });
+            // })
+            // rimraf.sync(conPath);
+            // }, 500);
         } catch (error) {
             log.error("delete ", error);
             throw error
@@ -296,24 +315,15 @@ module.exports = class {
     writeContainers(componentName) {
         // 获取所有组件，空目录排除
         const containersDir = this.getContainersDir();
-        // import 列表
-        // let importList = containersDir.map(x => `import ${x} from 'containers/${x}';`);
-        // importList.push('export default {\n    '
-        //     + containersDir.join(",\n    ") +
-        //     '\n}')
-        // fs.writeFileSync(path.join(this.containersPath, "index.ts"), importList.join("\n"));
-        let importList = containersDir.filter(component => {
-            if (component == componentName || this.deleteList.some(x => component == x)) {
-                return false;
-            }
-            return true;
-        }).map(component => {
+        let importList = containersDir.map(component => {
             return `${component}: () => import('./${component}').then(x => x.default)`
         });
-        fs.writeFileSync(path.join(this.containersPath, "index.ts"), 'export default {\n    '
+        const conPath = path.join(this.containersPath, "index.ts")
+        let conStr = fsExtra.readFileSync(conPath).toString();
+        conStr = conStr.replace(/(\/.*WTM.*\/)(\D*)(\/.*WTM.*\/)/, '/**WTM**/ \n    '
             + importList.join(",\n    ") +
-            '\n}'
-        );
+            '\n    /**WTM**/')
+        fs.writeFileSync(conPath,conStr);
         // log.success("writeContainers");
     }
     /**
@@ -321,8 +331,9 @@ module.exports = class {
      */
     getContainersDir() {
         return fs.readdirSync(this.containersPath).filter(x => {
-            const pathStr = path.join(this.containersPath, x, "index.tsx");
-            return this.exists(pathStr)
+            const pathStr = path.join(this.containersPath, x, "pageConfig.json");
+            // console.log(pathStr, this.exists(pathStr));
+            return !this.deleteList.some(del => del == x) && this.exists(pathStr)
             // return fs.statSync(pathStr).isDirectory() && this.exists(path.join(pathStr, "index.tsx"))
         })
     }

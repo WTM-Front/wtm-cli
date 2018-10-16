@@ -6,7 +6,7 @@ module.exports = function (router) {
      */
     router.get('/server/init', async (ctx, next) => {
         try {
-            await this.componentCreate.init()
+            await this.componentCreate.injection()
             ctx.body = {
                 code: 200,
                 data: {

@@ -3,8 +3,8 @@ const program = require('commander')  // npm i commander -D
 const package = require('../package.json');
 program.version(package.version, '-v, --version')
 	.usage('<command> [项目名称]')
-	.command('hello', 'hello')
-	.command('init', 'init')
-	.command('server', 'server')
-	.command('update', 'update')
+	// .command('hello', 'hello')
+	.command('init', '初始化项目')
+	.command('server', '启动swagger解析服务')
+	.command('update', '更新指定模块')
 	.parse(process.argv)
