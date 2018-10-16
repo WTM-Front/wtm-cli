@@ -136,11 +136,13 @@ class Project {
      */
     exec(prompts) {
         const projectPath = path.join(this.rootPath, prompts.projectName);
-        child_process.exec(`code -g -n ${projectPath}`, { cwd: projectPath, maxBuffer: 999999999 }, (error, stdout, stderr) => {
-            if (error) {
-                log.error('vscode 开启项目出错，请自行打开项目');
-            }
-        });
+        if (process.platform == "win32") {
+            child_process.exec(`code -g -n ${projectPath}`, { cwd: projectPath, maxBuffer: 999999999 }, (error, stdout, stderr) => {
+                if (error) {
+                    log.error('vscode 开启项目出错，请自行打开项目');
+                }
+            });
+        }
         if (prompts.install) {
             // this.runCommand('npma', ['install -d --registry=https://registry.npm.taobao.org/'])
             const spawn = child_process.spawnSync(

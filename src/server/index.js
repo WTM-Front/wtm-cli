@@ -4,7 +4,8 @@ const bodyParser = require('koa-bodyparser');
 const staticServer = require("koa-static");
 const path = require('path');
 const opn = require('opn');
-const proxy = require('koa2-simple-proxy');
+// const proxy = require('koa2-simple-proxy');
+const proxy = require('koa-server-http-proxy')
 const componentCreate = require('./componentCreate');
 const routerGets = require('./routerGet');
 const routerPost = require('./routerPost');
@@ -25,9 +26,13 @@ module.exports = class {
     this.use();
     app.listen(port, null, null, () => {
       const loct = `http://localhost:${port}`;
-      log.success('模板服务已启动', loct);
       log.success("swaggerDoc", swaggerDoc);
-      opn(loct);
+      if (process.platform == "win32") {
+        log.success('模板服务已启动 ', loct);
+        opn(loct);
+      } else {
+        log.warning('浏览器打开 ', loct);
+      }
     });
 
   }
@@ -47,7 +52,14 @@ module.exports = class {
     app
       // .use(cors())
       .use(bodyParser())
-      .use(proxy('/swaggerDoc', swaggerDoc))
+      // .use(proxy('/swaggerDoc', swaggerDoc))
+      .use(proxy('/swaggerDoc', {
+        target: swaggerDoc,
+        pathRewrite: {
+          "^/swaggerDoc": ""
+        },
+        changeOrigin: true
+      }))
       .use(staticServer(path.join(this.contextRoot, "wtmfront", "swagger", "dist")))
       // .use(proxy(this.componentCreate.wtmfrontConfig.swaggerDoc))
       .use(router.routes())

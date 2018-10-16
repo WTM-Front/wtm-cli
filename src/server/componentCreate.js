@@ -1,12 +1,6 @@
 const path = require("path");
-const fs = require('fs');
-const fsExtra = require('fs-extra');
-const memFs = require('mem-fs');
-const editor = require('mem-fs-editor');
-const store = memFs.create();
-const fsEditor = editor.create(store);
+const fs = require('fs-extra');
 const ora = require('ora');
-const rimraf = require('rimraf');
 const templateServer = require('./templateServer/analysis');
 const registerHelper = require('./templateServer/registerHelper');
 const log = require('../lib/log');
@@ -111,7 +105,7 @@ module.exports = class {
         const spinner = ora('创建组件').start();
         try {
             // // 清空目录
-            fsExtra.removeSync(this.temporaryPath);
+            fs.emptyDirSync(this.temporaryPath);
             this.deleteList = [];
             // 创建成功的组件
             const successList = [];
@@ -128,7 +122,7 @@ module.exports = class {
                     this.createTemporary(component.template, temporaryPath);
                     // 写入配置文件。
                     // spinner.text = 'Create pageConfig';
-                    fsExtra.writeJsonSync(path.join(temporaryPath, "pageConfig.json"), component, { spaces: 4 });
+                    fs.writeJsonSync(path.join(temporaryPath, "pageConfig.json"), component, { spaces: 4 });
                     // spinner.text = 'analysis template';
                     await analysis.render();
                     successList.push(component);
@@ -138,7 +132,7 @@ module.exports = class {
                     // 拷贝生成组件
                     this.copy(temporaryPath, fsPath);
                     // 删除临时文件
-                    fsExtra.removeSync(temporaryPath);
+                    fs.removeSync(temporaryPath);
                 } catch (error) {
                     log.error("创建失败 ", component.componentName);
                     log.error("error-", error);
@@ -177,15 +171,7 @@ module.exports = class {
         //     templatePath = path.join(this.contextRoot, this.wtmfrontConfig.template);
         // }
         // 拷贝模板文件 到临时目录 写入数据
-        fsExtra.copySync(path.join(templatePath, template), temporaryPath);
-    }
-    fsExistsSync(path) {
-        try {
-            fs.accessSync(path, fs.F_OK);
-        } catch (e) {
-            return false;
-        }
-        return true;
+        fs.copySync(path.join(templatePath, template), temporaryPath);
     }
     /**
      * 删除组件
@@ -204,7 +190,7 @@ module.exports = class {
             const conPath = path.join(this.containersPath, componentName)
             log.success("delete " + componentName);
             // setTimeout(() => {
-            return fsExtra.remove(conPath)
+            return fs.remove(conPath)
             // return new Promise((resole, reject) => {
             //     fsExtra.remove(conPath, error => {
             //         if (error) {
@@ -227,7 +213,7 @@ module.exports = class {
      * @param {*} fsPath 
      */
     exists(fsPath) {
-        const exists = fsEditor.exists(fsPath);
+        const exists = fs.pathExistsSync(fsPath);
         // console.log("exists：" + fsPath, exists);
         return exists
     }
@@ -236,7 +222,7 @@ module.exports = class {
      * @param {*} fsPath 
      */
     mkdirSync(fsPath) {
-        fsExtra.ensureDirSync(fsPath);
+        fs.ensureDirSync(fsPath);
         // console.log("mkdirSync");
     }
     /**
@@ -245,14 +231,14 @@ module.exports = class {
      * @param {*} to 
      */
     copy(from, to) {
-        fsExtra.copySync(from, to)
+        fs.copySync(from, to)
         // log.info("create", to);
     }
     /**
      * 获取路由配置 json
      */
     readJSON() {
-        return fsExtra.readJsonSync(this.subMenuPath);
+        return fs.readJsonSync(this.subMenuPath);
     }
     guid() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -290,7 +276,7 @@ module.exports = class {
             }
             // 写入json
             // editorFs.writeJSON(path.join(this.contextRoot, "src", "app", "a.json"), routers);
-            fsExtra.writeJsonSync(this.subMenuPath, routers, { spaces: 4 });
+            fs.writeJsonSync(this.subMenuPath, routers, { spaces: 4 });
             // log.success("writeRouters " + type, JSON.stringify(components, null, 4));
         } else {
             log.error("没有找到对应的路由JSON文件");
@@ -302,7 +288,7 @@ module.exports = class {
     updateSubMenu(subMenu) {
         let routers = this.readJSON();
         routers.subMenu = subMenu;
-        fsExtra.writeJsonSync(this.subMenuPath, routers, { spaces: 4 });
+        fs.writeJsonSync(this.subMenuPath, routers, { spaces: 4 });
         log.success("updateSubMenu ");
     }
     /**
@@ -315,7 +301,7 @@ module.exports = class {
             return `${component}: () => import('./${component}').then(x => x.default)`
         });
         const conPath = path.join(this.containersPath, "index.ts")
-        let conStr = fsExtra.readFileSync(conPath).toString();
+        let conStr = fs.readFileSync(conPath).toString();
         conStr = conStr.replace(/(\/.*WTM.*\/)(\D*)(\/.*WTM.*\/)/, '/**WTM**/ \n    '
             + importList.join(",\n    ") +
             '\n    /**WTM**/')

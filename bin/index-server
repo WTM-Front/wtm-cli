@@ -1,10 +1,7 @@
 #!/usr/bin/env node
 const program = require('commander');
-const memFs = require('mem-fs');
-const editor = require('mem-fs-editor');
-const store = memFs.create();
-const fsEditor = editor.create(store);
 const rootPath = process.cwd();
+const fs = require('fs-extra');
 const path = require('path');
 const log = require('../src/lib/log');
 const server = require('../src/server/index');
@@ -14,9 +11,9 @@ program.usage('<port>').parse(process.argv)
 // 根据输入，获取项目名称
 const port = program.args[0]
 // 判断项目是否存在
-if (fsEditor.exists(path.join(rootPath, 'package.json'))) {
+if (fs.pathExistsSync(path.join(rootPath, 'package.json'))) {
     const wtmconfig = path.join(rootPath, 'wtmfront.config.js');
-    if (fsEditor.exists(wtmconfig)) {
+    if (fs.pathExistsSync(wtmconfig)) {
         start(wtmconfig);
     } else {
         return log.error(`找不到 wtmfront.config.js 配置文件~`);
@@ -27,7 +24,7 @@ if (fsEditor.exists(path.join(rootPath, 'package.json'))) {
 async function start(wtmconfig) {
     const swagger = path.join(rootPath, 'wtmfront', 'swagger', 'dist', 'index.html');
     const config = require(wtmconfig);
-    if (fsEditor.exists(swagger)) {
+    if (fs.pathExistsSync(swagger)) {
         new server(rootPath).init(port || config.serverPort || 8765);
     } else {
         log.warning("没有找到 swagger 模块，等待更新")

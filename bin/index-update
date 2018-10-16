@@ -1,9 +1,6 @@
 #!/usr/bin/env node
 const program = require('commander');
-const memFs = require('mem-fs');
-const editor = require('mem-fs-editor');
-const store = memFs.create();
-const fsEditor = editor.create(store);
+const fs = require('fs-extra');
 const rootPath = process.cwd();
 const path = require('path');
 const log = require('../src/lib/log');
@@ -15,8 +12,8 @@ const args = program.args
 const { modular } = program
 const updateModular = args[0] || modular
 // 判断项目是否存在
-if (fsEditor.exists(path.join(rootPath, 'package.json'))) {
-    if (fsEditor.exists(path.join(rootPath, 'wtmfront.config.js'))) {
+if (fs.pathExistsSync(path.join(rootPath, 'package.json'))) {
+    if (fs.pathExistsSync(path.join(rootPath, 'wtmfront.config.js'))) {
         new update({ modular: updateModular }).create();
     } else {
         return log.error(`找不到 wtmfront.config.js 配置文件~`);
