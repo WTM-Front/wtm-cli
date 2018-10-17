@@ -29,8 +29,8 @@ class Update {
             name: 'swagger',
             value: 'swagger'
         }, {
-            name: 'table',
-            value: 'table'
+            name: 'wtmCore',
+            value: 'wtmCore'
         }, {
             name: 'all',
             value: 'all'
@@ -70,11 +70,14 @@ class Update {
         // console.log(prompts);
         switch (prompts.modular) {
             case 'swagger':
-                const swaggerPath = await this.downloadSwagger();
-                this.updateDTS(swaggerPath)
+                await this.downloadSwagger();
                 break;
-
+            case 'wtmCore':
+                await this.downloadWTM();
+                break;
             default:
+                await this.downloadSwagger();
+                await this.downloadWTM();
                 break;
         }
         return true;
@@ -85,12 +88,32 @@ class Update {
     async downloadSwagger(prompts) {
         let url = "WTM-Front/wtm-swagger";
         const swaggerPath = path.join(this.rootPath, "wtmfront", "swagger");
-        return await download(url, swaggerPath, {
+        await download(url, swaggerPath, {
             start: "更新 Swagger 解析组件",
-            error: "Swagger 解析组件 更新败 请手动执行 wtm update swagger",
+            error: "Swagger 解析组件 更新失败 请手动执行 wtm update swagger",
             success: "Swagger 解析组件 更新完成",
         })
-        return swaggerPath
+        this.updateDTS(swaggerPath)
+    }
+    /**
+     * 下载wtm 核心模块
+     */
+    async downloadWTM(prompts) {
+        let url = "WTM-Front/wtm-template-react";
+        const config = require(path.join(this.rootPath, 'wtmfront.config.js'));
+        if (config.type == "Vue") {
+            url = "WTM-Front/wtm-template-vue";
+        }
+        const dest = path.join(path.dirname(__dirname), 'temporary', 'updateWTM');
+        fs.emptyDirSync(dest);
+        await download(url, dest, {
+            start: "更新 WTM 组件",
+            error: "WTM 组件 更新失败 请手动执行 wtm update wtmCore",
+            success: "WTM 下载 完成",
+        });
+        fs.copySync(path.join(dest, "src", "wtm"), path.join(this.rootPath, "src", "wtm"));
+        fs.copySync(path.join(dest, "wtmfront"), path.join(this.rootPath, "wtmfront"));
+        log.success("WTM 更新成功")
     }
     /**
      * 修改声明文件

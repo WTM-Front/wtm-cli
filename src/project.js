@@ -195,7 +195,15 @@ class Project {
         pack.author = "";
         delete pack.scripts.swagger;
         delete pack.scripts.test;
-        fs.writeJsonSync(path.join(dest, "package.json"), pack, { spaces: 4 })
+        fs.writeJsonSync(path.join(dest, "package.json"), pack, { spaces: 4 });
+        // 清理 导出组件
+        const conPath = path.join(dest, "src", "containers", "index.ts")
+        let conStr = fs.readFileSync(conPath).toString();
+        conStr = conStr.replace(/(\/.*WTM.*\/)(\D*)(\/.*WTM.*\/)/, '/**WTM**/ \n    '
+            +
+            '\n    /**WTM**/')
+        fs.writeFileSync(conPath, conStr);
+
     }
     /**
      * 拷贝项目
