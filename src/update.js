@@ -70,7 +70,8 @@ class Update {
         // console.log(prompts);
         switch (prompts.modular) {
             case 'swagger':
-                await this.downloadSwagger();
+                const swaggerPath = await this.downloadSwagger();
+                this.updateDTS(swaggerPath)
                 break;
 
             default:
@@ -83,12 +84,19 @@ class Update {
     */
     async downloadSwagger(prompts) {
         let url = "WTM-Front/wtm-swagger";
-        const projectPath = path.join(this.rootPath, "wtmfront", "swagger");
-        return await download(url, projectPath, {
+        const swaggerPath = path.join(this.rootPath, "wtmfront", "swagger");
+        return await download(url, swaggerPath, {
             start: "更新 Swagger 解析组件",
             error: "Swagger 解析组件 更新败 请手动执行 wtm update swagger",
             success: "Swagger 解析组件 更新完成",
         })
+        return swaggerPath
+    }
+    /**
+     * 修改声明文件
+     */
+    updateDTS(swaggerPath) {
+        fs.copyFileSync(path.join(swaggerPath, "typings", "swagger.d.ts"), path.join(this.rootPath, "typings", "swagger.d.ts"));
     }
     /**
      * 写入数据
