@@ -298,7 +298,7 @@ module.exports = class {
         // 获取所有组件，空目录排除
         const containersDir = this.getContainersDir();
         let importList = containersDir.map(component => {
-            return `${component}: () => import('./${component}').then(x => x.default)`
+            return `${component.name}: () => import('./${component.name}').then(x => x.default)`
         });
         const conPath = path.join(this.containersPath, "index.ts")
         let conStr = fs.readFileSync(conPath).toString();
