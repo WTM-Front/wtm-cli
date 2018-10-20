@@ -27,7 +27,7 @@ module.exports = function (router) {
     router.post('/server/delete', async (ctx, next) => {
         // const data = await create(ctx.request.body, this.Generator.contextRoot)
         try {
-            await this.componentCreate.delete(ctx.request.body.containersName)
+            await this.componentCreate.delete(ctx.request.body.name)
             ctx.body = {
                 code: 200,
                 data: true,

@@ -317,6 +317,12 @@ module.exports = class {
             // console.log(pathStr, this.exists(pathStr));
             return !this.deleteList.some(del => del == x) && this.exists(pathStr)
             // return fs.statSync(pathStr).isDirectory() && this.exists(path.join(pathStr, "index.tsx"))
+        }).map(dir => {
+            const pathStr = path.join(this.containersPath, dir, "pageConfig.json");
+            return {
+                name: dir,
+                pageConfig: fs.readJsonSync(pathStr)
+            }
         })
     }
     /**
@@ -325,6 +331,7 @@ module.exports = class {
     getTemplate() {
         // const template = ['default'];
         if (this.wtmfrontConfig.template) {
+            this.templates = [];
             const templatePath = path.join(this.contextRoot, this.wtmfrontConfig.template);
             fs.readdirSync(templatePath).filter(x => {
                 if (fs.statSync(path.join(templatePath, x)).isDirectory()) {

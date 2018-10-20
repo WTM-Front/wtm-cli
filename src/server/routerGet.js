@@ -31,12 +31,7 @@ module.exports = function (router) {
         try {
             ctx.body = {
                 code: 200,
-                data: this.componentCreate.getContainersDir().map(x => {
-                    return {
-                        name: x,
-                        component: x
-                    }
-                }),
+                data: this.componentCreate.getContainersDir(),
                 message: `create 成功`
             };
         } catch (error) {
