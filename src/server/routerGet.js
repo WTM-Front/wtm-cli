@@ -14,6 +14,7 @@ module.exports = function (router) {
                     // componentName: this.componentCreate.componentName,
                     containersPath: this.componentCreate.containersPath,
                     subMenuPath: this.componentCreate.subMenuPath,
+                    subMenu:this.componentCreate.subMenuConfig,
                     templates: this.componentCreate.templates,
                     wtmfrontConfig:this.componentCreate.wtmfrontConfig
                 },

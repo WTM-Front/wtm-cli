@@ -1,6 +1,7 @@
 const path = require("path");
 const fs = require('fs-extra');
 const ora = require('ora');
+const lodash = require("lodash");
 const templateServer = require('./templateServer/analysis');
 const registerHelper = require('./templateServer/registerHelper');
 const log = require('../lib/log');
@@ -27,6 +28,10 @@ module.exports = class {
          * 路由路径
          */
         this.subMenuPath = path.join(this.contextRoot, "src", "app", "subMenu.json");
+        /**
+         * 菜单
+         */
+        this.subMenuConfig = {};
         /**
          * 模板路径
          */
@@ -75,7 +80,7 @@ module.exports = class {
      * 注入模块
      */
     injection() {
-        registerHelper(this.wtmfrontConfig);
+        // registerHelper(this.wtmfrontConfig);
         this.getTemplate();
     }
     /**
@@ -88,9 +93,12 @@ module.exports = class {
         try {
             containersPath = path.join(this.contextRoot, config.containers);
             subMenuPath = path.join(this.contextRoot, config.subMenu);
+            const subMenu = require(subMenuPath);
+            this.subMenuConfig = subMenu;
             this.containersPath = containersPath;
             this.subMenuPath = subMenuPath;
             this.wtmfrontConfig = Object.assign({}, this.wtmfrontConfig, config);
+            registerHelper(this.wtmfrontConfig);
         } catch (error) {
             log.error(error);
             throw error;
@@ -262,7 +270,7 @@ module.exports = class {
                         "Icon": component.icon,//图标
                         "Path": `/${component.componentName}`,//路径
                         "Component": component.componentName,//组件
-                        "Action": Object.keys(component.actions),//操作
+                        "Action": lodash.toArray(component.actions),//操作
                         "Children": []//子菜单
                     });
                 })
@@ -330,6 +338,7 @@ module.exports = class {
      */
     getTemplate() {
         // const template = ['default'];
+
         if (this.wtmfrontConfig.template) {
             this.templates = [];
             const templatePath = path.join(this.contextRoot, this.wtmfrontConfig.template);
@@ -337,6 +346,10 @@ module.exports = class {
                 if (fs.statSync(path.join(templatePath, x)).isDirectory()) {
                     this.templates.push(x);
                 }
+            })
+            log.info("模板列表：")
+            this.templates.forEach(item => {
+                log.info(`- ${item}`)
             })
         }
         // return template;
