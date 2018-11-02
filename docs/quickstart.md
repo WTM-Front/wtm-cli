@@ -18,7 +18,6 @@ $ wtm init <project-name>
 ```bash
 <!-- 根目录 -->
 $ npm start 
-<!--  webpack-dev-server --open  -->
 ```
 ## 启动模板服务
 

@@ -27,7 +27,7 @@ module.exports = class {
         /**
          * 路由路径
          */
-        this.subMenuPath = path.join(this.contextRoot, "src", "app", "subMenu.json");
+        this.subMenuPath = path.join(this.contextRoot, "src", "project.json");
         /**
          * 菜单
          */
@@ -93,10 +93,9 @@ module.exports = class {
         try {
             containersPath = path.join(this.contextRoot, config.containers);
             subMenuPath = path.join(this.contextRoot, config.subMenu);
-            const subMenu = require(subMenuPath);
-            this.subMenuConfig = subMenu;
             this.containersPath = containersPath;
             this.subMenuPath = subMenuPath;
+            this.subMenuConfig = this.getContainersResources();
             this.wtmfrontConfig = Object.assign({}, this.wtmfrontConfig, config);
             registerHelper(this.wtmfrontConfig);
         } catch (error) {
@@ -163,6 +162,58 @@ module.exports = class {
 
     }
     /**
+     * 修改组件
+     * @param {*}  
+     */
+    async update(body) {
+        try {
+            fs.emptyDirSync(this.temporaryPath);
+            const { component, key, name } = body;
+            const fsPath = path.join(this.containersPath, component.componentName);
+            // 创建临时文件
+            const temporaryPath = path.join(this.temporaryPath, component.componentName);
+            // 模板服务
+            const analysis = new templateServer(temporaryPath);
+            this.mkdirSync(temporaryPath);
+            this.createTemporary(component.template, temporaryPath);
+            // 写入配置文件。
+            // spinner.text = 'Create pageConfig';
+            fs.writeJsonSync(path.join(temporaryPath, "pageConfig.json"), component, { spaces: 4 });
+            // spinner.text = 'analysis template';
+            await analysis.render();
+            // 创建目录
+            this.mkdirSync(fsPath);
+            // 拷贝生成组件
+            this.copy(temporaryPath, fsPath);
+            // 删除临时文件
+            fs.removeSync(temporaryPath);
+            // 写入路由
+            this.writeRouters(component, 'updaste');
+            log.success("修改 ", `${name} to ${component.componentName}`);
+            if (component.componentName == name) {
+                return true;
+            }
+            this.deleteList.push(name);
+            // 生成导出
+            this.writeContainers();
+            return new Promise((resole, reject) => {
+                setTimeout(() => {
+                    fs.remove(path.join(this.containersPath, name), error => {
+                        // if (error) {
+                        //     reject(error)
+                        // }
+                        resole(true);
+                        // 生成导出
+                        this.writeContainers();
+                    });
+                }, 500);
+            })
+        } catch (error) {
+            log.error("修改失败 ", component.componentName);
+            log.error("error-", error);
+        }
+    }
+    /**
      * 创建临时目录
      * @param {*} template 模板名称
      * @param {*} temporaryPath  临时目录
@@ -183,32 +234,34 @@ module.exports = class {
     }
     /**
      * 删除组件
-     * @param {*} componentName 
+     * @param {*} component 
      */
-    delete(componentName) {
+    delete(component) {
         try {
             // 防止操作太快。
             if (new Date().getTime() - this.deleteTime <= 3000) {
                 throw "操作太快,请等待3秒后再试"
             }
             this.deleteTime = new Date().getTime();
-            this.deleteList.push(componentName);
-            this.writeContainers(componentName);
-            this.writeRouters(componentName, 'delete');
-            const conPath = path.join(this.containersPath, componentName)
-            log.success("delete " + componentName);
+            this.deleteList.push(component.name);
+            this.writeContainers();
+            this.writeRouters(component, 'delete');
+            const conPath = path.join(this.containersPath, component.name)
+            log.success("delete " + component.name);
             // setTimeout(() => {
-            return fs.remove(conPath)
-            // return new Promise((resole, reject) => {
-            //     fsExtra.remove(conPath, error => {
-            //         if (error) {
-            //             // return reject(error)
-            //         }
-            //         setTimeout(() => {
-            //             resole(true);
-            //         }, 500);
-            //     });
-            // })
+            // return fs.remove(conPath)
+            return new Promise((resole, reject) => {
+                setTimeout(() => {
+                    fs.remove(conPath, error => {
+                        // if (error) {
+                        //     reject(error)
+                        // }
+                        resole(true);
+                        // 生成导出
+                        this.writeContainers();
+                    });
+                }, 500);
+            })
             // rimraf.sync(conPath);
             // }, 500);
         } catch (error) {
@@ -264,23 +317,47 @@ module.exports = class {
             let routers = this.readJSON();
             if (type == 'add') {
                 components.map(component => {
-                    routers.subMenu.push({
+                    const data = {
                         "Key": component.key,//唯一标识
                         "Name": component.menuName,//菜单名称
                         "Icon": component.icon,//图标
                         "Path": `/${component.componentName}`,//路径
                         "Component": component.componentName,//组件
-                        "Action": lodash.toArray(component.actions),//操作
+                        "Action": lodash.compact(lodash.toArray(lodash.mapValues(component.actions, (value, key) => {
+                            if (value.state) {
+                                value.key = key;
+                                delete value.state;
+                                return value
+                            }
+                        }))),//操作
                         "Children": []//子菜单
-                    });
+                    }
+                    routers.subMenu.push(data);
                 })
+
+            } else if (type == "updaste") {
+                const data = {
+                    "Key": components.key,//唯一标识
+                    "Name": components.menuName,//菜单名称
+                    "Icon": components.icon,//图标
+                    "Path": `/${components.componentName}`,//路径
+                    "Component": components.componentName,//组件
+                    "Action": lodash.compact(lodash.toArray(lodash.mapValues(components.actions, (value, key) => {
+                        if (value.state) {
+                            value.key = key;
+                            delete value.state;
+                            return value
+                        }
+                    }))),//操作
+                    "Children": []//子菜单
+                }
+                const index = lodash.findIndex(routers.subMenu, x => x.Key == components.key);
+                lodash.fill(routers.subMenu, data, index, index + 1);
             } else {
                 // 删除
-                const index = routers.subMenu.findIndex(x => x.Component == components);
-                if (index != -1) {
-                    routers.subMenu.splice(index, 1);
-                }
-                // console.log("index " + component, index);
+                lodash.remove(routers.subMenu, (value) => {
+                    return value.Key == components.key;
+                })
             }
             // 写入json
             // editorFs.writeJSON(path.join(this.contextRoot, "src", "app", "a.json"), routers);
@@ -302,7 +379,7 @@ module.exports = class {
     /**
      * 写入组件导出
      */
-    writeContainers(componentName) {
+    writeContainers() {
         // 获取所有组件，空目录排除
         const containersDir = this.getContainersDir();
         let importList = containersDir.map(component => {
@@ -327,11 +404,28 @@ module.exports = class {
             // return fs.statSync(pathStr).isDirectory() && this.exists(path.join(pathStr, "index.tsx"))
         }).map(dir => {
             const pathStr = path.join(this.containersPath, dir, "pageConfig.json");
-            return {
-                name: dir,
-                pageConfig: fs.readJsonSync(pathStr)
+            try {
+                const config = fs.readJsonSync(pathStr);
+                return {
+                    name: dir,
+                    key: config.key,
+                    pageConfig: config
+                }
+            } catch (error) {
+                return {
+                    name: dir,
+                    pageConfig: error
+                }
             }
+
         })
+    }
+    /**
+     * 获取组件资源
+     * @param {*} subMenuPath 
+     */
+    getContainersResources() {
+        return require(this.subMenuPath);
     }
     /**
      * 获取模板列表

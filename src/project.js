@@ -100,7 +100,7 @@ class Project {
             prompts.push({
                 type: 'confirm',
                 name: 'install',
-                message: '是否执行npm install ？'
+                message: '是否安装依赖？'
             })
         }
         // if (typeof options.swagger !== 'string') {
@@ -144,19 +144,41 @@ class Project {
             });
         }
         if (prompts.install) {
-            // this.runCommand('npma', ['install -d --registry=https://registry.npm.taobao.org/'])
-            const spawn = child_process.spawnSync(
-                "npm",
-                ['install --registry=https://registry.npm.taobao.org/'],
-                {
-                    cwd: projectPath,
-                    stdio: 'inherit',
-                    shell: true,
-                }
-            )
+            let spawn;
+            if (this.shouldUseYarn()) {
+                // yarn
+                spawn = child_process.spawnSync(
+                    "yarn",
+                    ['install'],
+                    {
+                        cwd: projectPath,
+                        stdio: 'inherit',
+                        shell: true,
+                    }
+                )
+            } else {
+                // npm
+                spawn = child_process.spawnSync(
+                    "npm",
+                    ['install --registry=https://registry.npm.taobao.org/'],
+                    {
+                        cwd: projectPath,
+                        stdio: 'inherit',
+                        shell: true,
+                    }
+                )
+            }
             if (spawn.status == 1) {
                 log.error(`安装项目依赖失败，请自行重新安装！`)
             }
+        }
+    }
+    shouldUseYarn() {
+        try {
+            child_process.execSync('yarn --version', { stdio: 'ignore' })
+            return true
+        } catch (e) {
+            return false
         }
     }
     /**

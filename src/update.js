@@ -119,7 +119,7 @@ class Update {
      * 修改声明文件
      */
     updateDTS(swaggerPath) {
-        fs.copyFileSync(path.join(swaggerPath, "typings", "swagger.d.ts"), path.join(this.rootPath, "typings", "swagger.d.ts"));
+        // fs.copyFileSync(path.join(swaggerPath, "typings", "swagger.d.ts"), path.join(this.rootPath, "typings", "swagger.d.ts"));
     }
     /**
      * 写入数据

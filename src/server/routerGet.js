@@ -1,4 +1,4 @@
-const test= require("./swaggerDoc.json")
+const test = require("./swaggerDoc.json")
 const serve = require('koa-static');
 module.exports = function (router) {
     /**
@@ -14,9 +14,9 @@ module.exports = function (router) {
                     // componentName: this.componentCreate.componentName,
                     containersPath: this.componentCreate.containersPath,
                     subMenuPath: this.componentCreate.subMenuPath,
-                    subMenu:this.componentCreate.subMenuConfig,
+                    subMenu: this.componentCreate.subMenuConfig,
                     templates: this.componentCreate.templates,
-                    wtmfrontConfig:this.componentCreate.wtmfrontConfig
+                    wtmfrontConfig: this.componentCreate.wtmfrontConfig
                 },
                 message: `init 成功`
             };
@@ -32,7 +32,10 @@ module.exports = function (router) {
         try {
             ctx.body = {
                 code: 200,
-                data: this.componentCreate.getContainersDir(),
+                data: {
+                    containers: this.componentCreate.getContainersDir(),
+                    resources: this.componentCreate.getContainersResources()
+                },
                 message: `create 成功`
             };
         } catch (error) {

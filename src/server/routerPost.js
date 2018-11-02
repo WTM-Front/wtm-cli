@@ -21,13 +21,35 @@ module.exports = function (router) {
             };
         }
     });
+     /**
+     * 修改组件
+     */
+    router.post('/server/update', async (ctx, next) => {
+        // const data = await create(ctx.request.body, this.Generator.contextRoot)
+        try {
+
+            await this.componentCreate.update(ctx.request.body)
+            ctx.body = {
+                code: 200,
+                data: true,
+                message: `update 成功`
+            };
+            // console.log("create",ctx.request.body);
+        } catch (error) {
+            ctx.body = {
+                code: 500,
+                data: false,
+                message: error
+            };
+        }
+    });
     /**
      * 删除
      */
     router.post('/server/delete', async (ctx, next) => {
         // const data = await create(ctx.request.body, this.Generator.contextRoot)
         try {
-            await this.componentCreate.delete(ctx.request.body.name)
+            await this.componentCreate.delete(ctx.request.body)
             ctx.body = {
                 code: 200,
                 data: true,
