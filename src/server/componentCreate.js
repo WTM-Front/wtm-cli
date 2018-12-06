@@ -130,6 +130,7 @@ module.exports = class {
                     // 写入配置文件。
                     // spinner.text = 'Create pageConfig';
                     fs.writeJsonSync(path.join(temporaryPath, "pageConfig.json"), component, { spaces: 4 });
+                    fs.ensureFileSync(path.join(temporaryPath, component.name + ".md"))
                     // spinner.text = 'analysis template';
                     await analysis.render();
                     successList.push(component);
@@ -383,7 +384,7 @@ module.exports = class {
         // 获取所有组件，空目录排除
         const containersDir = this.getContainersDir();
         let importList = containersDir.map(component => {
-            return `${component.name}: () => import('./${component.name}').then(x => x.default)`
+            return `//${component.pageConfig.menuName}      ${component.pageConfig.name}\n    ${component.name}: () => import('./${component.name}').then(x => x.default)`
         });
         const conPath = path.join(this.containersPath, "index.ts")
         let conStr = fs.readFileSync(conPath).toString();
