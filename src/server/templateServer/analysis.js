@@ -61,7 +61,7 @@ module.exports = class {
     async  renderTemplate(pathStr) {
         const source = await fsExtra.readFile(pathStr)
         const template = Handlebars.compile(source.toString());
-        const result = template(this.pageConfig);
+        const result = template(Object.assign({ pageConfig: this.pageConfig }, this.pageConfig));
         await fsExtra.writeFile(pathStr, result);
         // log.warning(pathStr);
     }
