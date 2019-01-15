@@ -2,14 +2,13 @@
 const program = require('commander');
 const project = require("../src/project");
 program
-    .option('--name', '项目名称')
-    .option('--template', '模板类型')
+    .option('-n,--name <n>', '项目名称')
+    .option('-t,--template <n>', '模板类型')
     // .option('--url', 'git 路径')
     .parse(process.argv)
 const args = program.args
 const { name, template, url } = program
 const projectName = args[0] || name
-
 
 const pro = new project({
     projectName,

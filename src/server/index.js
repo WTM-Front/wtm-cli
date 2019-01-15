@@ -13,9 +13,9 @@ const log = require('../lib/log');
 const app = new Koa();
 const router = new Router();
 module.exports = class {
-  constructor(contextRoot) {
+  constructor(contextRoot, config = "wtmfront.config.js") {
     this.contextRoot = contextRoot;
-    this.componentCreate = new componentCreate(contextRoot);
+    this.componentCreate = new componentCreate(contextRoot, config);
   }
   init(port = 8765) {
     this.router();

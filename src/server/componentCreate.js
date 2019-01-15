@@ -6,7 +6,7 @@ const templateServer = require('./templateServer/analysis');
 const registerHelper = require('./templateServer/registerHelper');
 const log = require('../lib/log');
 module.exports = class {
-    constructor(contextRoot) {
+    constructor(contextRoot, config = "wtmfront.config.js") {
         // this.Generator = Generator;
         // this.fs = this.Generator.fs;
         // 项目根路径  
@@ -43,7 +43,7 @@ module.exports = class {
         /**
          * 项目配置文件路径
          */
-        this.wtmfrontPath = path.join(this.contextRoot, "wtmfront.config.js");
+        this.wtmfrontPath = path.join(this.contextRoot, config);
         /**
          * 项目配置
          */
@@ -192,11 +192,12 @@ module.exports = class {
             this.writeRouters(component, 'updaste');
             log.success("修改 ", `${name} to ${component.componentName}`);
             if (component.componentName == name) {
+                this.writeContainers();
                 return true;
             }
             this.deleteList.push(name);
             // 生成导出
-            this.writeContainers();
+            // this.writeContainers();
             return new Promise((resole, reject) => {
                 setTimeout(() => {
                     fs.remove(path.join(this.containersPath, name), error => {
@@ -259,7 +260,7 @@ module.exports = class {
                         // }
                         resole(true);
                         // 生成导出
-                        this.writeContainers();
+                        // this.writeContainers();
                     });
                 }, 500);
             })
@@ -324,13 +325,13 @@ module.exports = class {
                         "Icon": component.icon,//图标
                         "Path": `/${component.componentName}`,//路径
                         "Component": component.componentName,//组件
-                        "Action": lodash.compact(lodash.toArray(lodash.mapValues(component.actions, (value, key) => {
-                            if (value.state) {
-                                value.key = key;
-                                delete value.state;
-                                return value
-                            }
-                        }))),//操作
+                        // "Action": lodash.compact(lodash.toArray(lodash.mapValues(component.actions, (value, key) => {
+                        //     if (value.state) {
+                        //         value.key = key;
+                        //         delete value.state;
+                        //         return value
+                        //     }
+                        // }))),//操作
                         "Children": []//子菜单
                     }
                     routers.subMenu.push(data);
@@ -343,13 +344,13 @@ module.exports = class {
                     "Icon": components.icon,//图标
                     "Path": `/${components.componentName}`,//路径
                     "Component": components.componentName,//组件
-                    "Action": lodash.compact(lodash.toArray(lodash.mapValues(components.actions, (value, key) => {
-                        if (value.state) {
-                            value.key = key;
-                            delete value.state;
-                            return value
-                        }
-                    }))),//操作
+                    // "Action": lodash.compact(lodash.toArray(lodash.mapValues(components.actions, (value, key) => {
+                    //     if (value.state) {
+                    //         value.key = key;
+                    //         delete value.state;
+                    //         return value
+                    //     }
+                    // }))),//操作
                     "Children": []//子菜单
                 }
                 const index = lodash.findIndex(routers.subMenu, x => x.Key == components.key);
@@ -383,13 +384,22 @@ module.exports = class {
     writeContainers() {
         // 获取所有组件，空目录排除
         const containersDir = this.getContainersDir();
-        let importList = containersDir.map(component => {
-            return `//${component.pageConfig.menuName}      ${component.pageConfig.name}\n    ${component.name}: () => import('./${component.name}').then(x => x.default)`
+        let importList = [];
+        let pageList = containersDir.map(component => {
+            importList.push(`import ${component.name} from './${component.name}';`)
+               return `/**${component.pageConfig.menuName}      ${component.pageConfig.name} **/\n    ${component.name}: {
+           name: '${component.pageConfig.menuName}',
+           path: '${component.pageConfig.componentName}',
+           component: ${component.name} \n    }`
+        //     return `/**${component.pageConfig.menuName}      ${component.pageConfig.name} **/\n    ${component.name}: {
+        // name: '${component.pageConfig.menuName}',
+        // path: '${component.pageConfig.componentName}',
+        // component: () => import('./${component.name}').then(x => x.default) \n    }`
         });
         const conPath = path.join(this.containersPath, "index.ts")
         let conStr = fs.readFileSync(conPath).toString();
-        conStr = conStr.replace(/(\/.*WTM.*\/)(\D*)(\/.*WTM.*\/)/, '/**WTM**/ \n    '
-            + importList.join(",\n    ") +
+        conStr = conStr.replace(/(\/.*import.*\/)(\D*)(\/.*import.*\/)/,"/**import**/ \n"+importList.join("\n")+"\n/**import**/").replace(/(\/.*WTM.*\/)(\D*)(\/.*WTM.*\/)/, '/**WTM**/ \n    '
+            + pageList.join(",\n    ") +
             '\n    /**WTM**/')
         fs.writeFileSync(conPath, conStr);
         // log.success("writeContainers");
