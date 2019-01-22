@@ -324,13 +324,13 @@ module.exports = class {
                         "Icon": component.icon,//图标
                         "Path": `/${component.componentName}`,//路径
                         "Component": component.componentName,//组件
-                        "Action": lodash.compact(lodash.toArray(lodash.mapValues(component.actions, (value, key) => {
-                            if (value.state) {
-                                value.key = key;
-                                delete value.state;
-                                return value
-                            }
-                        }))),//操作
+                        // "Action": lodash.compact(lodash.toArray(lodash.mapValues(component.actions, (value, key) => {
+                        //     if (value.state) {
+                        //         value.key = key;
+                        //         delete value.state;
+                        //         return value
+                        //     }
+                        // }))),//操作
                         "Children": []//子菜单
                     }
                     routers.subMenu.push(data);
@@ -343,13 +343,13 @@ module.exports = class {
                     "Icon": components.icon,//图标
                     "Path": `/${components.componentName}`,//路径
                     "Component": components.componentName,//组件
-                    "Action": lodash.compact(lodash.toArray(lodash.mapValues(components.actions, (value, key) => {
-                        if (value.state) {
-                            value.key = key;
-                            delete value.state;
-                            return value
-                        }
-                    }))),//操作
+                    // "Action": lodash.compact(lodash.toArray(lodash.mapValues(components.actions, (value, key) => {
+                    //     if (value.state) {
+                    //         value.key = key;
+                    //         delete value.state;
+                    //         return value
+                    //     }
+                    // }))),//操作
                     "Children": []//子菜单
                 }
                 const index = lodash.findIndex(routers.subMenu, x => x.Key == components.key);
