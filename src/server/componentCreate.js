@@ -386,21 +386,24 @@ module.exports = class {
         const containersDir = this.getContainersDir();
         let importList = [];
         let pageList = containersDir.map(component => {
-            importList.push(`import ${component.name} from './${component.name}';`)
-               return `/**${component.pageConfig.menuName}      ${component.pageConfig.name} **/\n    ${component.name}: {
-           name: '${component.pageConfig.menuName}',
-           path: '${component.pageConfig.componentName}',
-           component: ${component.name} \n    }`
-        //     return `/**${component.pageConfig.menuName}      ${component.pageConfig.name} **/\n    ${component.name}: {
-        // name: '${component.pageConfig.menuName}',
-        // path: '${component.pageConfig.componentName}',
-        // component: () => import('./${component.name}').then(x => x.default) \n    }`
+            // importList.push(`import ${component.name} from './${component.name}';`)
+        //        return `/**${component.pageConfig.menuName}      ${component.pageConfig.name} **/\n    ${component.name}: {
+        //    name: '${component.pageConfig.menuName}',
+        //    path: '${component.pageConfig.componentName}',
+        //    component: ${component.name} \n    }`
+            return `/**${component.pageConfig.menuName}      ${component.pageConfig.name} **/\n    ${component.name}: {
+        name: '${component.pageConfig.menuName}',
+        path: '/${component.pageConfig.componentName}',
+        component: () => import('./${component.name}').then(x => x.default) \n    }`
         });
         const conPath = path.join(this.containersPath, "index.ts")
         let conStr = fs.readFileSync(conPath).toString();
-        conStr = conStr.replace(/(\/.*import.*\/)(\D*)(\/.*import.*\/)/,"/**import**/ \n"+importList.join("\n")+"\n/**import**/").replace(/(\/.*WTM.*\/)(\D*)(\/.*WTM.*\/)/, '/**WTM**/ \n    '
+        conStr = conStr.replace(/(\/.*WTM.*\/)(\D*)(\/.*WTM.*\/)/, '/**WTM**/ \n    '
             + pageList.join(",\n    ") +
             '\n    /**WTM**/')
+        // conStr = conStr.replace(/(\/.*import.*\/)(\D*)(\/.*import.*\/)/,"/**import**/ \n"+importList.join("\n")+"\n/**import**/").replace(/(\/.*WTM.*\/)(\D*)(\/.*WTM.*\/)/, '/**WTM**/ \n    '
+        //     + pageList.join(",\n    ") +
+        //     '\n    /**WTM**/')
         fs.writeFileSync(conPath, conStr);
         // log.success("writeContainers");
     }
